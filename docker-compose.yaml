@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+  apache:
+    build:
+      context: ./apache
+      dockerfile: Dockerfile
+    restart: always
+    links:
+      - mysql
+    volumes:
+      - ./apache/src:/var/www/html
+    ports:
+      - "8080:8080"
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: always
+    links:
+      - mysql
+    volumes:
+      - ./nginx/src:/usr/share/nginx/html-static
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "8081:8081"
+
+  mysql:
+    image: mysql:8.0.30
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+      MYSQL_ROOT_USERNAME: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: appDB
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.0
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "5000:5000"
+      
